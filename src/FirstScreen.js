@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, PermissionsAndroid, Alert, Platform, TouchableOpacity } from 'react-native';
 import axios from 'axios';
-import BackgroundService from 'react-native-background-actions';
 
 const FirstScreen = () => {
 
@@ -48,10 +47,6 @@ const FirstScreen = () => {
     return true; // iOS permissions are handled automatically
   };
 
-
-
-
-
   // Start live location sharing
   const startLocationSharing = async () => {
     const hasPermission = await requestLocationPermission();
@@ -63,7 +58,6 @@ const FirstScreen = () => {
     setIsSharing(true);
     setLoading(true);
     setError(null);
-    //API Calling
     try {
       const url = "http://10.0.2.2:7707/api/v1/location/getCurrentLocation";
       // const response = await fetch(url2, { method: 'GET', headers });
@@ -91,29 +85,15 @@ const FirstScreen = () => {
       setLoading(false); // Stop loading
     }
 
-    // await new Promise( async (resolve) => {
-    //   //for loop with a delay
-    //   const { delay } = 50;
-    //   console.log(BackgroundService.isRunning(), delay);
-    //     for (let i = 0; BackgroundService.isRunning(); i++) {
-    //       await BackgroundService.updateNotification({
-    //         taskDesc: 'Runned ->' + i,
-    //         progressBar: 2,
-    //       });
-    //         console.log(i);
-    //         await sleep(delay);
-    //     }
-    // });
   };
 
-
-
-  useEffect(() => {
-    // Fetch location when the component loads
-    startLocationSharing();
-  }, []);
-
-
+  // Stop live location sharing
+  const stopLocationSharing = () => {
+    setIsSharing(false);
+    setLocation(null);
+    stopServiceAll();
+    console.log('Location sharing stopped.');
+  };
 
   // Save Location
   const sendLocationToServer = async (locationData) => {
@@ -147,110 +127,12 @@ const FirstScreen = () => {
       console.error('Failed to send location to server:', error.message);
       Alert.alert('Error', 'Failed to save location to the server.');
     }
-
-    // await new Promise( async (resolve) => {
-    //   //for loop with a delay
-    //   const { delay } = 50;
-    //   console.log(BackgroundService.isRunning(), delay);
-    //     for (let i = 0; BackgroundService.isRunning(); i++) {
-    //       await BackgroundService.updateNotification({
-    //         taskDesc: 'Runned ->' + i,
-    //         progressBar: 2,
-    //       });
-    //         console.log(i);
-    //         await sleep(delay);
-    //     }
-    // });
   };
 
-
-
-  // Stop live location sharing
-  const stopLocationSharing = () => {
-    setIsSharing(false);
-    setLocation(null);
-    console.log('Location sharing stopped.');
-  };
-
-  
-  //Background
-  const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
-
-  BackgroundService.on('expiration', ()=> {
-    console.log("Android: I am being closed!")
-  })
-
-  let playing = BackgroundService.isRunning();
-  const options = {
-    taskName: 'Example',
-    taskTitle: 'ExampleTask title',
-    taskDesc: 'ExampleTask description',
-    taskIcon: {
-        name: 'ic_launcher',
-        type: 'mipmap',
-    },
-    color: '#ff00ff',
-    linkingURI: 'yourSchemeHere://chat/jane', // See Deep Linking for more info
-    parameters: {
-        delay: 1000,
-    },
-};
-
-  const toggleBackground= async () => {
-    playing = !playing;
-    if(playing) {
-      try {
-        console.log("Trying to start Background Service");
-        await BackgroundService.start(startLocationSharing, options);
-        console.log("Started");
-      } catch (e) {
-        console.log("Error", e);
-      }
-    } else {
-      console.log("Stop Background Service");
-      await BackgroundService.stop();
-    }
-  }
-
-  //Foreground
-  // ReactNativeForegroundService.add_task(() => update(), {
-  //   delay: 1000,
-  //   onLoop: true,
-  //   taskId: "taskid",
-  //   onError: (e) => console.log(`Error logging:`, e),
-  // });
-
-  // ReactNativeForegroundService.register = ({config: {alert, onServiceErrorCallBack}}) => {
-  //   if (!serviceRunning) {
-  //     setupServiceErrorListener({
-  //       alert,
-  //       onServiceFailToStart: onServiceErrorCallBack,
-  //     });
-  //     return ForegroundService.registerForegroundTask('myTaskName', startLocationSharing);
-  //   }
-  // };
-
-  // const stopServiceAll = async () => {
-  //   return await ForegroundServiceModule.stopServiceAll();
-  // }
-
-  // ReactNativeForegroundService.start({
-  //   id: 1244,
-  //   title: "Foreground Service",
-  //   message: "We are live World",
-  //   icon: "ic_launcher",
-  //   button: true,
-  //   button2: true,
-  //   buttonText: "Button",
-  //   button2Text: "Anther Button",
-  //   buttonOnPress: "cray",
-  //   setOnlyAlertOnce: true,
-  //   color: "#000000",
-  //   progress: {
-  //     max: 100,
-  //     curr: 50,
-  //   },
-  // });
+  useEffect(() => {
+    // Fetch location when the component loads
+    startLocationSharing();
+  }, []);
 
   return (
     <View style={styles.container}>
